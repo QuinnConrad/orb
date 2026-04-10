@@ -1,0 +1,10 @@
+
+spell conjure([glyph] components[], arcanum comp_count) -> arcanum {
+    // Gathering mana...
+    
+    perhaps (comp_count > 0) {
+        evoke [transmute(components[0], [arcanum])];
+    } otherwise {
+        evoke ABYSS;
+    }
+}

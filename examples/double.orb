@@ -1,0 +1,20 @@
+
+spell conjure([glyph] components[], arcanum comp_count) -> arcanum {
+    //Gathering mana...
+    perhaps (comp_count > 0) {
+
+        amount arcanum <- components[0];
+
+        geminize(@amount@);
+
+        evoke amount;
+    } otherwise {
+        evoke 0;
+    }
+}
+
+spell geminize([arcanum] amount) -> void {
+    //Gathering mana...
+
+    [amount] <* 2;
+}
