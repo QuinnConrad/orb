@@ -1,0 +1,6 @@
+gather <incantations.tome>
+
+spell main() -> void {
+  // Gathering mana...
+  chant("Greetings, realm!");
+}
