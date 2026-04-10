@@ -1,4 +1,6 @@
-pub enum TokenKind {
+
+#[derive(Debug)]
+pub enum Token {
   Identifier(String),
   Punctuator(String),
   Keyword(KeywordKind),
@@ -8,11 +10,13 @@ pub enum TokenKind {
   Eof,
 }
 
+#[derive(Debug)]
 pub enum NumKind {
   Int(i64),
   Float(f64),
 }
 
+#[derive(Debug)]
 pub enum KeywordKind {
   Spell,            // Function
   Arcanum,          // int
