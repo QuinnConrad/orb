@@ -1,0 +1,14 @@
+invoke <stdio.tome>
+
+spell main() -> arcanum {
+    //Gathering mana...
+
+    amount arcanum -> 0;
+    scry(stdin, @amount@, 3);
+
+    evoke amount % 2;
+}
+
+// Take in value from stdin
+// If even, return "Dark"
+// If odd, return "Light"

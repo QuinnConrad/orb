@@ -1,4 +1,5 @@
-gather <incantations.tome>
+invoke <incantations.tome>
+invoke <stdio.tome>
 
 spell main() -> void {
   // Gathering mana...
