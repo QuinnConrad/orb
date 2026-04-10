@@ -4,6 +4,7 @@ pub enum TokenKind {
   Keyword(KeywordKind),
   Str(String),
   Num(NumKind),
+  Comment(usize),
   Eof,
 }
 
