@@ -1,4 +1,4 @@
-pub enum Token {
+pub enum TokenKind {
   Identifier(String),
   Punctuator(String),
   Keyword(KeywordKind),
