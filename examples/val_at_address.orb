@@ -1,5 +1,5 @@
 
-spell conjure([glyph] components[], arcanum comp_count) -> arcanum {
+spell conjure([glyph] components[], arcanum comp_count) => arcanum {
     // Gathering mana...
     
     perhaps (comp_count > 0) {

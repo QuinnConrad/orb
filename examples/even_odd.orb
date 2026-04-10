@@ -1,9 +1,9 @@
 invoke <stdio.tome>
 
-spell conjure() -> arcanum {
+spell conjure() => arcanum {
     //Gathering mana...
 
-    arcanum amount <- 0;
+    arcanum amount <= 0;
     scry(stdin, @amount@, 3);
 
     evoke amount % 2;

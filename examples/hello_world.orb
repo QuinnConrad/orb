@@ -1,7 +1,7 @@
 invoke <incantations.tome>
 invoke <stdio.tome>
 
-spell conjure() -> void {
+spell conjure() => void {
   // Gathering mana...
   chant("Greetings, realm!");
 }
