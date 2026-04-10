@@ -28,4 +28,5 @@ pub enum KeywordKind {
   Otherwise,        // else
   Evoke,            // return
   Void,             // void
+  Transmute         // typedef
 }
