@@ -5,7 +5,9 @@ use lex::Lexer;
 
 fn main() {
     let lexer = Lexer::new();
-    let input = "echo 111 3.14 \"hello world\"";
+    let input = "echo -1 1 0.1 \"hello world\"\
+                # i'm leaving a comment
+                -0.1 perhaps otherwise";
     let tokens = lexer.tokenize(input);
     if let Ok(tokens) = tokens {
       println!("matched something!");

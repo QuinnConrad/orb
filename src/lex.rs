@@ -1,5 +1,5 @@
 use regex::Regex;
-use crate::token::{Token, NumKind};
+use crate::token::{Token, NumKind, KeywordKind};
 
 pub struct Lexer {
   rules: Regex,
@@ -9,18 +9,18 @@ pub struct Lexer {
 pub enum LexerErr {
   UnexpectedCharErr(usize),
   UnmatchedErr,
-  eee,
+  ParsingErr,
 }
 
 impl Lexer {
   pub fn new() -> Self {
     let pattern = vec![
+            "(?P<KEYWORD>(perhaps|otherwise))",
             "(?P<IDENT>[a-zA-Z_][a-zA-Z0-9_]*)",
             "(?P<RARROW>=>)",
             "(?P<LARROW><[-+*/%=])",
-            "(?P<COMMENT>(#[^\n]*)|(##.*##))",
+            "(?P<COMMENT>(#[^\n]*))",
             //"(?P<PUNCT>;;)",
-            //"(?P<KEYWORD>::)",
             "(?P<STR>\"(\\.|[^\"])*\")",
             r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
             "(?P<WHITESPACE>[ \n\t]+)",
@@ -46,13 +46,25 @@ impl Lexer {
         else if let Some(_) = caps.name("NUM") {
           let num_str = matched.as_str();
           let kind = if num_str.contains('.') {
-            let val = num_str.parse::<f64>().map_err(|_| LexerErr::eee)?;
+            let val = num_str.parse::<f64>().map_err(|_| LexerErr::ParsingErr)?;
             NumKind::Float(val)
           } else {
-            let val = num_str.parse::<i64>().map_err(|_| LexerErr::eee)?;
+            let val = num_str.parse::<i64>().map_err(|_| LexerErr::ParsingErr)?;
             NumKind::Int(val)
           };
           tokens.push(Token::Num(kind));
+        }
+        else if let Some(_) = caps.name("COMMENT") {
+          tokens.push(Token::Comment(matched.len()));
+        }
+        else if let Some(_) = caps.name("KEYWORD") {
+          let matched_str = matched.as_str();
+          let kind = match matched_str {
+            "perhaps" => KeywordKind::Perhaps,
+            "otherwise" => KeywordKind::Otherwise,
+            _ => panic!(),
+          };
+          tokens.push(Token::Keyword(kind));
         }
 
 
