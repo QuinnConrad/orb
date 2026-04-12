@@ -1,8 +1,8 @@
-
 #[derive(Debug)]
 pub enum Token {
   Identifier(String),
-  Punctuator(String),
+  Punctuator(PunctKind),
+  Operator(OperatorKind),
   Keyword(KeywordKind),
   Str(String),
   Num(NumKind),
@@ -34,4 +34,14 @@ pub enum KeywordKind {
   Evoke,            // return
   Void,             // void
   Transmute         // typedef
+}
+
+#[derive(Debug)]
+pub enum PunctKind {
+  TODO
+}
+
+#[derive(Debug)]
+pub enum OperatorKind {
+  TODO,
 }

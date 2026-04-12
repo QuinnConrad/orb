@@ -7,7 +7,7 @@ fn main() {
     let lexer = Lexer::new();
     let input = "echo -1 1 0.1 \"hello world\"\
                 # i'm leaving a comment
-                -0.1 perhaps otherwise";
+                -0.1 perhaps otherwise perhaps_variable";
     let tokens = lexer.tokenize(input);
     if let Ok(tokens) = tokens {
       println!("matched something!");
