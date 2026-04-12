@@ -15,8 +15,7 @@ pub enum LexerErr {
 impl Lexer {
   pub fn new() -> Self {
     let pattern = vec![
-            "(?P<KEYWORD>(perhaps|otherwise))",
-            "(?P<IDENT>[a-zA-Z_][a-zA-Z0-9_]*)",
+            "(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
             "(?P<RARROW>=>)",
             "(?P<LARROW><[-+*/%=])",
             "(?P<COMMENT>(#[^\n]*))",
@@ -37,8 +36,8 @@ impl Lexer {
           return Err(LexerErr::UnexpectedCharErr(idx));
         }
         let caps = self.rules.captures(&input[idx..]).unwrap();
-        if let Some(_) = caps.name("IDENT") {
-          tokens.push(Token::Identifier(matched.as_str().to_string()));
+        if let Some(_) = caps.name("WORD") {
+          tokens.push(decode_word(matched.as_str()));
         }
         else if let Some(_) = caps.name("STR") {
           tokens.push(Token::Str(matched.as_str().to_string()));
@@ -57,16 +56,6 @@ impl Lexer {
         else if let Some(_) = caps.name("COMMENT") {
           tokens.push(Token::Comment(matched.len()));
         }
-        else if let Some(_) = caps.name("KEYWORD") {
-          let matched_str = matched.as_str();
-          let kind = match matched_str {
-            "perhaps" => KeywordKind::Perhaps,
-            "otherwise" => KeywordKind::Otherwise,
-            _ => panic!(),
-          };
-          tokens.push(Token::Keyword(kind));
-        }
-
 
         idx = matched.end();
       }
@@ -75,4 +64,26 @@ impl Lexer {
     Ok(tokens)
   }
 
+}
+
+fn decode_word(word: &str) -> Token {
+  match word {
+    "alignment" => Token::Keyword(KeywordKind::Alignment),
+    "arcanum" => Token::Keyword(KeywordKind::Arcanum),
+    "changeling" => Token::Keyword(KeywordKind::Changeling),
+    "evoke" => Token::Keyword(KeywordKind::Evoke),
+    "glyph" => Token::Keyword(KeywordKind::Glyph),
+    "great" => Token::Keyword(KeywordKind::Great),
+    "halfling" => Token::Keyword(KeywordKind::Halfling),
+    "impure" => Token::Keyword(KeywordKind::Impure),
+    "otherwise" => Token::Keyword(KeywordKind::Otherwise),
+    "perhaps" => Token::Keyword(KeywordKind::Perhaps),
+    "potion" => Token::Keyword(KeywordKind::Potion),
+    "pure" => Token::Keyword(KeywordKind::Pure),
+    "rune" => Token::Keyword(KeywordKind::Rune),
+    "spell" => Token::Keyword(KeywordKind::Spell),
+    "transmute" => Token::Keyword(KeywordKind::Transmute),
+    "void" => Token::Keyword(KeywordKind::Void),
+    _ => Token::Identifier(word.to_string())
+  }
 }
