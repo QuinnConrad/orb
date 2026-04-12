@@ -38,10 +38,34 @@ pub enum KeywordKind {
 
 #[derive(Debug)]
 pub enum PunctKind {
-  TODO
+  Comma,
+  Dot,
+  Semicolon,
+  OpenParen,
+  CloseParen,
+  OpenBrace,
+  CloseBrace,
+  OpenBracket,
+  CloseBracket,
+  At,
+  Rarrow,
 }
 
 #[derive(Debug)]
 pub enum OperatorKind {
-  TODO,
+  Assign,             // <=
+  Plus, Minus,        // +, -
+  Mult, Div, Mod,     // *, /, %
+  BitAnd, BitOr,      // $&, $|
+  BitNot, BitXor,     // $!, $^
+  BitLeft, BitRight   // $<, $>
+  LogAnd, LogOr,      // &, |
+  LogNot,             // !
+  Eq, Ne,             // =, ~
+  Lt, Gt, Le, Ge,     // <, >, =<, >=
+  PlusAssign,         // <+
+  MinusAssign,        // <-
+  MultAssign,         // <*
+  DivAssign,          // </
+  ModAssign,          // <%
 }
