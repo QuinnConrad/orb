@@ -32,7 +32,10 @@ pub enum KeywordKind {
   Perhaps,          // if
   Otherwise,        // else
   Evoke,            // return
-  Void,             // void
+  Void,             // Void
+  Whilst,           // While
+  Persevere,        // continue
+  Banish,           // break
   Transmute         // typedef
 }
 
@@ -58,7 +61,7 @@ pub enum OperatorKind {
   Mult, Div, Mod,     // *, /, %
   BitAnd, BitOr,      // $&, $|
   BitNot, BitXor,     // $!, $^
-  BitLeft, BitRight   // $<, $>
+  BitLeft, BitRight,   // $<, $>
   LogAnd, LogOr,      // &, |
   LogNot,             // !
   Eq, Ne,             // =, ~
