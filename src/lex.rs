@@ -7,9 +7,7 @@ pub struct Lexer {
 
 #[derive(Debug)]
 pub enum LexerErr {
-  UnexpectedCharErr(usize),
-  UnexpectedPunctErr(String),
-  UnexpectedOperatorErr(String),
+  UnexpectedCharErr(usize), 
   UnmatchedErr,
   ParsingErr,
 }
@@ -18,9 +16,9 @@ impl Lexer {
   pub fn new() -> Self {
     let pattern = vec![
             "(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
-            "(?P<OPERATOR>((>=)|(=<)|(<([=+-*/%])?)|(($)?[&|!><])|($^)|([=~]))",
+            "(?P<OPERATOR>((>=)|(=<)|(<([=+*/%-])?)|(($)?[&|!><])|($^)|([=~])))",
             "(?P<COMMENT>(#[^\n]*))",
-            "(?P<PUNCT>(=>)|([,.({[]});@]))",
+            r"(?P<PUNCT>(=>)|([,.\(\)\{\}\[\];@]))",
             "(?P<STR>\"(\\.|[^\"])*\")",
             r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
             "(?P<WHITESPACE>[ \n\t]+)",
