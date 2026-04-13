@@ -1,6 +1,6 @@
 
 spell conjure([glyph] components[], arcanum comp_count) => arcanum {
-    //Gathering mana...
+    # Gathering mana...
     perhaps (comp_count > 0) {
 
         amount arcanum <= components[0];
@@ -14,7 +14,7 @@ spell conjure([glyph] components[], arcanum comp_count) => arcanum {
 }
 
 spell geminize([arcanum] amount) => void {
-    //Gathering mana...
+    # Gathering mana...
 
     [amount] <* 2;
 }

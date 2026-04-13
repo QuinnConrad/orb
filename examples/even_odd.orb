@@ -1,7 +1,7 @@
 invoke <stdio.tome>
 
 spell conjure() => arcanum {
-    //Gathering mana...
+    # Gathering mana...
 
     arcanum amount <= 0;
     scry(stdin, @amount@, 3);
@@ -9,6 +9,6 @@ spell conjure() => arcanum {
     evoke amount % 2;
 }
 
-// Take in value from stdin
-// If even, return "Dark"
-// If odd, return "Light"
+# Take in value from stdin
+# If even, return "Dark"
+# If odd, return "Light"
