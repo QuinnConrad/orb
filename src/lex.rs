@@ -12,17 +12,21 @@ pub enum LexerErr {
   ParsingErr,
 }
 
+impl Default for Lexer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Lexer {
   pub fn new() -> Self {
-    let pattern = vec![
-            "(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
+    let pattern = ["(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
             "(?P<OPERATOR>((>=)|(=<)|((<)?[=+*/%-])|(($)?[&|!><])|($^)|([=~])))",
             r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
             "(?P<COMMENT>(#[^\n]*))",
             r"(?P<PUNCT>(=>)|([,.\(\)\{\}\[\];@]))",
             "(?P<STR>\"(\\.|[^\"])*\")",
-            "(?P<WHITESPACE>[ \n\t]+)",
-    ].join("|");
+            "(?P<WHITESPACE>[ \n\t]+)"].join("|");
     Self { rules: Regex::new(&pattern).unwrap() }
   }
 
@@ -35,13 +39,13 @@ impl Lexer {
           return Err(LexerErr::UnexpectedCharErr(idx));
         }
         let caps = self.rules.captures(&input[idx..]).unwrap();
-        if let Some(_) = caps.name("WORD") {
+        if caps.name("WORD").is_some() {
           tokens.push(decode_word(matched.as_str()));
         }
-        else if let Some(_) = caps.name("STR") {
+        else if caps.name("STR").is_some() {
           tokens.push(Token::Str(matched.as_str().to_string()));
         }
-        else if let Some(_) = caps.name("NUM") {
+        else if caps.name("NUM").is_some() {
           let num_str = matched.as_str();
           let kind = if num_str.contains('.') {
             let val = num_str.parse::<f64>().map_err(|_| LexerErr::ParsingErr)?;
@@ -52,13 +56,13 @@ impl Lexer {
           };
           tokens.push(Token::Num(kind));
         }
-        else if let Some(_) = caps.name("COMMENT") {
+        else if caps.name("COMMENT").is_some() {
           tokens.push(Token::Comment(matched.len()));
         }
-        else if let Some(_) = caps.name("OPERATOR") {
+        else if caps.name("OPERATOR").is_some() {
             tokens.push(decode_operator(matched.as_str()));
         }
-        else if let Some(_) = caps.name("PUNCT") {
+        else if caps.name("PUNCT").is_some() {
             tokens.push(decode_punct(matched.as_str()));
         }
 
@@ -109,7 +113,7 @@ fn decode_punct(word: &str) -> Token {
     "]" => Token::Punctuator(PunctKind::CloseBracket),
     "@" => Token::Punctuator(PunctKind::At),
     "=>" => Token::Punctuator(PunctKind::Rarrow),
-    _ => panic!("Unexpected Punctuator: {}", word.to_string())
+    _ => panic!("Unexpected Punctuator: {}", word)
   }
 }
 
@@ -141,7 +145,7 @@ fn decode_operator(word: &str) -> Token {
     "<*" => Token::Operator(OperatorKind::MultAssign),
     "</" => Token::Operator(OperatorKind::DivAssign),
     "<%" => Token::Operator(OperatorKind::ModAssign),
-    _ => panic!("Unexpected Operator: {}", word.to_string())
+    _ => panic!("Unexpected Operator: {}", word)
   }
 }
 
