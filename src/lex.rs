@@ -65,7 +65,7 @@ impl Lexer {
         idx = matched.end();
       }
     }
-    
+    tokens.push(Token::Eof);
     Ok(tokens)
   }
 
