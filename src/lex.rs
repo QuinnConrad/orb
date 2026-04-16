@@ -17,10 +17,10 @@ impl Lexer {
     let pattern = vec![
             "(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
             "(?P<OPERATOR>((>=)|(=<)|((<)?[=+*/%-])|(($)?[&|!><])|($^)|([=~])))",
+            r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
             "(?P<COMMENT>(#[^\n]*))",
             r"(?P<PUNCT>(=>)|([,.\(\)\{\}\[\];@]))",
             "(?P<STR>\"(\\.|[^\"])*\")",
-            r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
             "(?P<WHITESPACE>[ \n\t]+)",
     ].join("|");
     Self { rules: Regex::new(&pattern).unwrap() }
@@ -153,14 +153,19 @@ mod tests {
   #[test]
   fn test_numbers() {
     let lex: Lexer = Lexer::new();
-    let input = "-1 0 1 3.14 -1.618";
+    let input = "0 1 3.14 1.618";
     let tokens = lex.tokenize(input);
     if let Ok(tokens) = tokens {
       dbg!(&tokens);
       assert_eq!(tokens.len(), 5);
+      assert_eq!(tokens[0], Token::Num(NumKind::Int(0)));
+      assert_eq!(tokens[1], Token::Num(NumKind::Int(1)));
+      assert_eq!(tokens[2], Token::Num(NumKind::Float(3.14)));
+      assert_eq!(tokens[3], Token::Num(NumKind::Float(1.618)));
+      assert_eq!(tokens[4], Token::Eof);
     }
     else {
-      assert!(false);
+      panic!("Could not tokenize input");
     }
   }
 }
