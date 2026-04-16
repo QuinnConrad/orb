@@ -23,10 +23,10 @@ fn main() {
       println!("matched something!");
       println!("{}", tokens.len());
       for token in tokens {
-          println!("{:?}", token);
+          println!("{token:?}");
       }
     }
     else {
-      println!("hit an err: {:?}", tokens);
+      println!("hit an err: {tokens:?}");
     }
 }
