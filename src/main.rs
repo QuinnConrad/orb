@@ -1,5 +1,5 @@
-mod lex;
-mod token;
+pub mod lex;
+pub mod token;
 
 use std::env;
 use std::fs;
