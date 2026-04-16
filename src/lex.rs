@@ -19,6 +19,7 @@ impl Default for Lexer {
 }
 
 impl Lexer {
+  #[must_use] 
   pub fn new() -> Self {
     let pattern = ["(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
             "(?P<OPERATOR>((>=)|(=<)|((<)?[=+*/%-])|(($)?[&|!><])|($^)|([=~])))",
@@ -113,7 +114,7 @@ fn decode_punct(word: &str) -> Token {
     "]" => Token::Punctuator(PunctKind::CloseBracket),
     "@" => Token::Punctuator(PunctKind::At),
     "=>" => Token::Punctuator(PunctKind::Rarrow),
-    _ => panic!("Unexpected Punctuator: {}", word)
+    _ => panic!("Unexpected Punctuator: {word}")
   }
 }
 
@@ -145,7 +146,7 @@ fn decode_operator(word: &str) -> Token {
     "<*" => Token::Operator(OperatorKind::MultAssign),
     "</" => Token::Operator(OperatorKind::DivAssign),
     "<%" => Token::Operator(OperatorKind::ModAssign),
-    _ => panic!("Unexpected Operator: {}", word)
+    _ => panic!("Unexpected Operator: {word}")
   }
 }
 
