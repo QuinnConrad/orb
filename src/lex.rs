@@ -144,3 +144,23 @@ fn decode_operator(word: &str) -> Token {
     _ => panic!("Unexpected Operator: {}", word.to_string())
   }
 }
+
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_numbers() {
+    let lex: Lexer = Lexer::new();
+    let input = "-1 0 1 3.14 -1.618";
+    let tokens = lex.tokenize(input);
+    if let Ok(tokens) = tokens {
+      dbg!(&tokens);
+      assert_eq!(tokens.len(), 5);
+    }
+    else {
+      assert!(false);
+    }
+  }
+}
