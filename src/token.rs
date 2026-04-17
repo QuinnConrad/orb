@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,)]
 pub enum Token {
   Identifier(String),
   Punctuator(PunctKind),
@@ -10,13 +10,13 @@ pub enum Token {
   Eof,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,)]
 pub enum NumKind {
   Int(i64),
   Float(f64),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,)]
 pub enum KeywordKind {
   Spell,            // Function
   Arcanum,          // int
@@ -39,7 +39,7 @@ pub enum KeywordKind {
   Transmute         // typedef
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,)]
 pub enum PunctKind {
   Comma,
   Dot,
@@ -54,7 +54,7 @@ pub enum PunctKind {
   Rarrow,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq,)]
 pub enum OperatorKind {
   Assign,             // <=
   Plus, Minus,        // +, -

@@ -7,7 +7,7 @@ pub struct Lexer {
 
 #[derive(Debug)]
 pub enum LexerErr {
-  UnexpectedCharErr(usize), 
+  UnexpectedCharErr(usize),
   UnmatchedErr,
   ParsingErr,
 }
@@ -19,10 +19,10 @@ impl Default for Lexer {
 }
 
 impl Lexer {
-  #[must_use] 
+  #[must_use]
   pub fn new() -> Self {
     let pattern = ["(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
-            "(?P<OPERATOR>((>=)|(=<)|((<)?[=+*/%-])|(($)?[&|!><])|($^)|([=~])))",
+            r"(?P<OPERATOR>((>=)|(=<)|((<)?[=+*/%-])|((\$)?[&|!><^])|($^)|([=~])))",
             r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
             "(?P<COMMENT>(#[^\n]*))",
             r"(?P<PUNCT>(=>)|([,.\(\)\{\}\[\];@]))",
@@ -114,7 +114,7 @@ fn decode_punct(word: &str) -> Token {
     "]" => Token::Punctuator(PunctKind::CloseBracket),
     "@" => Token::Punctuator(PunctKind::At),
     "=>" => Token::Punctuator(PunctKind::Rarrow),
-    _ => panic!("Unexpected Punctuator: {word}")
+    _ => unreachable!("Unexpected Punctuator: {word}")
   }
 }
 
@@ -146,7 +146,7 @@ fn decode_operator(word: &str) -> Token {
     "<*" => Token::Operator(OperatorKind::MultAssign),
     "</" => Token::Operator(OperatorKind::DivAssign),
     "<%" => Token::Operator(OperatorKind::ModAssign),
-    _ => panic!("Unexpected Operator: {word}")
+    _ => unreachable!("Unexpected Operator: {word}")
   }
 }
 
@@ -156,20 +156,56 @@ mod tests {
   use super::*;
 
   #[test]
+  fn test_empty() {
+    let lex: Lexer = Lexer::new();
+    let input = "";
+    let tokens = lex.tokenize(input);
+    if let Ok(tokens) = tokens {
+      assert_eq!(tokens.len(), 1);
+      assert_eq!(tokens[0], Token::Eof);
+    }
+    else {
+      panic!("Could not tokenize input");
+    }
+  }
+
+  #[test]
   fn test_numbers() {
     let lex: Lexer = Lexer::new();
     let input = "0 1 3.14 1.618";
     let tokens = lex.tokenize(input);
-    if let Ok(tokens) = tokens {
+    if let Ok(mut tokens) = tokens {
       dbg!(&tokens);
-      assert_eq!(tokens.len(), 5);
+      let _ = tokens.pop();
+      assert_eq!(tokens.len(), 4);
       assert_eq!(tokens[0], Token::Num(NumKind::Int(0)));
       assert_eq!(tokens[1], Token::Num(NumKind::Int(1)));
       assert_eq!(tokens[2], Token::Num(NumKind::Float(3.14)));
       assert_eq!(tokens[3], Token::Num(NumKind::Float(1.618)));
-      assert_eq!(tokens[4], Token::Eof);
     }
     else {
+      panic!("Could not tokenize input");
+    }
+  }
+
+  #[test]
+  fn test_operators() {
+    let lex: Lexer = Lexer::new();
+    let input = "<= + - * / % $& $| $! $^ $< $> &\
+                | ! = ~ < > =< >= <+ <- <* </ <%";
+    let tokens = lex.tokenize(input);
+    if let Ok(tokens) = tokens {
+      dbg!(&tokens);
+      for i in 0..tokens.len() - 1 {
+        for j in i + 1..tokens.len() - 1 {
+          assert_ne!(tokens[i], tokens[j]);
+        }
+        assert!(matches!(tokens[i], Token::Operator(_)));
+      }
+      assert_eq!(tokens.len(), 27);
+    }
+    else {
+      dbg!("{tokens:?}");
       panic!("Could not tokenize input");
     }
   }
