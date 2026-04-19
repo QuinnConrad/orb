@@ -1,9 +1,14 @@
+pub mod ast;
 pub mod lex;
 pub mod token;
+pub mod parser;
 
 use std::env;
 use std::fs;
-use lex::Lexer;
+use crate::{
+  lex::Lexer,
+  parser::Parser,
+};
 
 fn main() {
     let lexer = Lexer::new();
@@ -20,6 +25,7 @@ fn main() {
 
     let tokens = lexer.tokenize(&input);
     if let Ok(tokens) = tokens {
+      let _parser = Parser::new(tokens.clone());
       println!("matched something!");
       println!("{}", tokens.len());
       for token in tokens {

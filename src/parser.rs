@@ -1,6 +1,6 @@
 use crate::{
-  lexer::{Token},
-  ast::{Stmt, ExprKind, typeKind},
+  token::{Token},
+  ast::{Stmt, ExprKind, TypeKind},
 };
 
 pub struct Parser {
@@ -9,8 +9,8 @@ pub struct Parser {
 }
 
 impl Parser {
-  pub fn new(tokens: Vec<Token>) {
-    Self {tokens, pos: 0}
+  pub fn new(tokens: Vec<Token>) -> Self {
+    Self {tokens, idx: 0}
   }
 
   fn peek(&self) -> &Token {
@@ -18,7 +18,7 @@ impl Parser {
   }
 
   fn empty(&self) -> bool {
-    self.peek() == Token::Eof
+    *self.peek() == Token::Eof
   }
 
   fn prev(&self) -> Token {
@@ -29,11 +29,11 @@ impl Parser {
     if !self.empty() {
       self.idx += 1;
     }
-    self.previous()
+    self.prev()
   } // advance
 
   fn consume(&mut self, expected: Token) -> Result<Token, String> {
-    if self.peek() == expected {
+    if *self.peek() == expected {
       Ok(self.advance())
     }
     else {
@@ -52,7 +52,9 @@ impl Parser {
   } // parse_program
 
   fn parse_statement(&mut self) -> Result<Stmt, String> {
+    let token = self.peek();
+
     todo!()
-  }
+  } // parse_statement
 
 } // impl Parser
