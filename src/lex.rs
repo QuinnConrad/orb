@@ -31,7 +31,7 @@ impl Lexer {
     Self { rules: Regex::new(&pattern).unwrap() }
   }
 
-  /// turns a string into tokens.
+  /// turns a string into a vector of tokens.
   ///
   /// ```
   /// let mut lex = orb::lex::Lexer::new();
