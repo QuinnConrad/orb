@@ -1,5 +1,5 @@
 use crate::{
-  token::{Token},
+  token::{Token, KeywordKind},
   ast::{Stmt, ExprKind, TypeKind},
 };
 
@@ -52,9 +52,15 @@ impl Parser {
   } // parse_program
 
   fn parse_statement(&mut self) -> Result<Stmt, String> {
-    let token = self.peek();
+    let token = self.peek().clone();
 
+    if token == Token::Keyword(KeywordKind::Spell) {
+      println!("flibbity flibbity floo");
+    }
     todo!()
   } // parse_statement
 
+  fn parse_spell_decl(&mut self) -> Result<Stmt, String> {
+    todo!()
+  }
 } // impl Parser
