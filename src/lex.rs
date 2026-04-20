@@ -31,6 +31,13 @@ impl Lexer {
     Self { rules: Regex::new(&pattern).unwrap() }
   }
 
+  /// turns a string into tokens.
+  ///
+  /// ```
+  /// let mut lex = orb::lex::Lexer::new();
+  /// let input = "spell smite(pure arcanum level) => halfling;";
+  /// assert!(lex.tokenize(input).is_ok())
+  /// ```
   pub fn tokenize(&self, input: &str) -> Result<Vec<Token>, LexerErr> {
     let mut tokens = Vec::new();
     let mut idx = 0;
