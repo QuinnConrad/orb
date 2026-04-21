@@ -44,11 +44,16 @@ impl Parser {
 
   ///
   /// ```
-  /// let input = "spell smite() => arcanum";
+  /// let input = String::from("spell fireball(arcanum level, halfling radius) => arcanum {")
+  ///                     + "\n    # This is an orb comment."
+  ///                     + "\n }";
   /// let lex = orb::lex::Lexer::new();
-  /// let tokens = lex.tokenize(input).expect("Should tokenize");
+  /// let tokens = lex.tokenize(&input).expect("Should tokenize");
+  /// dbg!("{:?}", tokens.clone());
   /// let mut parser = orb::parser::Parser::new(tokens);
-  /// dbg!(parser.parse_program());
+  /// let output = parser.parse_program();
+  /// dbg!(&output);
+  /// assert!(output.is_ok());
   /// ```
   pub fn parse_program(&mut self) -> Result<Vec<Stmt>, String> {
     let mut program = Vec::new();
@@ -64,11 +69,11 @@ impl Parser {
   fn parse_statement(&mut self) -> Result<Stmt, String> {
     let token = self.peek().clone();
 
-    match self.peek().clone() {
+    match *self.peek() {
       Token::Keyword(KeywordKind::Spell) => return self.parse_spell_decl(),
-      _ => todo!(),
+      Token::Comment(mana) => {self.advance(); return Ok(Stmt::Comment(mana))},
+      _ => todo!("{:?}", *self.peek()),
     }
-    unreachable!()
   } // parse_statement
 
 
@@ -76,7 +81,7 @@ impl Parser {
     let token = self.advance();
     match token {
       Token::Keyword(KeywordKind::Void) => Ok(TypeKind::Void),
-      Token::Keyword(KeywordKind::Arcanum) => Ok(TypeKind::TODO),
+      Token::Keyword(_) => Ok(TypeKind::TODO),
       _ => Err(format!("Expected type keyword, got {:?}", token)),
     }
   } // parse_type
@@ -97,6 +102,9 @@ impl Parser {
         Token::Identifier(n) => n,
         e => return Err(format!("Expected argument name, got {e:?}")),
       };
+      if *self.peek() != Token::Punctuator(PunctKind::CloseParen) {
+        self.consume(&Token::Punctuator(PunctKind::Comma))?;
+      }
       args.push( (arg_type, arg_name) );
     }
     self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
@@ -104,10 +112,12 @@ impl Parser {
 
     let ret_val = self.parse_type()?;
 
-
-
-    let body = vec![];
-    //let args = vec![];
+    self.consume(&Token::Punctuator(PunctKind::OpenBrace))?;
+    let mut body = vec![];
+    while *self.peek() != Token::Punctuator(PunctKind::CloseBrace) {
+      body.push(self.parse_statement()?);
+    }
+    self.consume(&Token::Punctuator(PunctKind::CloseBrace))?;
 
     Ok(Stmt::SpellDecl {
       name,
