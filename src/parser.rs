@@ -67,8 +67,6 @@ impl Parser {
 
 
   fn parse_statement(&mut self) -> Result<Stmt, String> {
-    let token = self.peek().clone();
-
     match *self.peek() {
       Token::Keyword(KeywordKind::Spell) => return self.parse_spell_decl(),
       Token::Comment(mana) => {self.advance(); return Ok(Stmt::Comment(mana))},
