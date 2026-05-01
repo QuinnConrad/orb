@@ -123,5 +123,20 @@ impl Parser {
       args,
       body,
     })
-  }
+  } // parse_spell_decl
+
+  fn parse_expression(&mut self) -> Result<Stmt, String> {
+    self.parse_primary_expr()
+  } // parse_expression
+
+  fn parse_primary_expr(&mut self) -> Result<Stmt, String> {
+    match self.advance() {
+      Token::Num(n) => Ok(Stmt::Expr(ExprKind::NumLiteral(n))),
+      Token::Str(_) => Ok(Stmt::Expr(ExprKind::StrLiteral)),
+      Token::Identifier(name) => Ok(Stmt::Expr(ExprKind::Identifier(name))),
+      tok => Err(format!("Unexpected token: {tok:?}")),
+    }
+  } // parse_primary_expr
+
+
 } // impl Parser
