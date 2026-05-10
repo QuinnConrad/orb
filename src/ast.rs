@@ -1,17 +1,17 @@
 use crate::token::{NumKind, OperatorKind};
 
-
+#[derive(Debug)]
 pub enum Stmt {
   Let {
-    var_type: Option<TypeKind>,
+    var_type: TypeKind,
     name: String,
-    val: ExprKind,
+    val: Option<ExprKind>,
   },
   Expr(ExprKind),
   SpellDecl {
     name: String,
     ret_val: TypeKind,
-    args: Vec<TypeKind>,
+    args: Vec<(TypeKind, String)>,
     body: Vec<Stmt>,
   },
   Comment(usize), // For gathering mana.
@@ -22,11 +22,13 @@ pub enum Stmt {
 
 }
 
+#[derive(Debug)]
 pub enum TypeKind {
   Void,
   TODO,
 }
 
+#[derive(Debug)]
 pub enum ExprKind {
   NumLiteral(NumKind),
   StrLiteral,

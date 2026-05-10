@@ -21,7 +21,12 @@ fn main() {
     let tokens = lexer.tokenize(&input);
     if let Ok(tokens) = tokens {
       let mut parser = Parser::new(tokens.clone());
-      parser.parse_program();
+      let statements = parser.parse_program();
+      if let Ok(stmts) = statements {
+        for s in stmts {
+          println!("{s:?}");
+        }
+      }
       println!("matched something!");
       println!("{}", tokens.len());
       for token in tokens {

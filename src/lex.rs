@@ -21,17 +21,18 @@ impl Default for Lexer {
 impl Lexer {
   #[must_use]
   pub fn new() -> Self {
-    let pattern = ["(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
+    let pattern = [
+            r"(?P<COMMENT>([#][^\n]*))",
+            "(?P<WORD>[a-zA-Z_][a-zA-Z0-9_]*)",
+            r"(?P<PUNCT>(=>)|([,.\(\)\{\}\[\];@]))",
             r"(?P<OPERATOR>((>=)|(=<)|((<)?[=+*/%-])|((\$)?[&|!><^])|($^)|([=~])))",
             r"(?P<NUM>(-)?[0-9]+(\.[0-9]+)?)",
-            "(?P<COMMENT>(#[^\n]*))",
-            r"(?P<PUNCT>(=>)|([,.\(\)\{\}\[\];@]))",
             "(?P<STR>\"(\\.|[^\"])*\")",
             "(?P<WHITESPACE>[ \n\t]+)"].join("|");
     Self { rules: Regex::new(&pattern).unwrap() }
   }
 
-  /// turns a string into tokens.
+  /// turns a string into a vector of tokens.
   ///
   /// ```
   /// let mut lex = orb::lex::Lexer::new();
