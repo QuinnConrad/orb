@@ -24,7 +24,7 @@ fn main() {
       let statements = parser.parse_program();
       if let Ok(stmts) = statements {
         for s in stmts {
-          println!("{s:?}")
+          println!("{s:?}");
         }
       }
       println!("matched something!");
