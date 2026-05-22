@@ -9,7 +9,7 @@ pub struct Parser {
 }
 
 impl Parser {
-  #[must_use] 
+  #[must_use]
   pub fn new(tokens: Vec<Token>) -> Self {
     Self {tokens, idx: 0}
   }
@@ -79,7 +79,11 @@ impl Parser {
   fn parse_type(&mut self) -> Result<TypeKind, String> {
     let token = self.advance();
     match token {
+      Token::Keyword(KeywordKind::Arcanum) => Ok(TypeKind::Arcanum),
+      Token::Keyword(KeywordKind::Glyph) => Ok(TypeKind::Glyph),
+      Token::Keyword(KeywordKind::Halfling) => Ok(TypeKind::Halfling),
       Token::Keyword(KeywordKind::Void) => Ok(TypeKind::Void),
+      Token::Identifier(ident) => Ok(TypeKind::Custom(ident)),
       Token::Keyword(_) => Ok(TypeKind::TODO),
       _ => Err(format!("Expected type keyword, got {token:?}")),
     }
@@ -126,6 +130,32 @@ impl Parser {
     })
   } // parse_spell_decl
 
+  fn parse_expr_stmt(&mut self) -> Result<Stmt, String> {
+    let expr = self.parse_expr()?;
+
+    if *self.peek() == Token::Punctuator(PunctKind::Semicolon) {
+        self.advance();
+    }
+
+    Ok(Stmt::Expr(expr))
+  } // parse_expr_stmt
+
+  fn parse_func_call(&mut self, name: String) -> Result<ExprKind, String> {
+    self.consume(&Token::Punctuator(PunctKind::OpenParen))?;
+
+    let mut args = Vec::new();
+    while *self.peek() != Token::Punctuator(PunctKind::CloseParen) {
+        args.push(self.parse_expr()?);
+        if *self.peek() != Token::Punctuator(PunctKind::CloseParen) {
+            self.consume(&Token::Punctuator(PunctKind::Comma))?;
+        }
+    }
+    self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
+
+    Ok(ExprKind::FunctionCall { name, args })
+  } // parse_func_call
+
+
   fn parse_expr(&mut self) -> Result<ExprKind, String> {
     let lhs = self.parse_primary()?;
     self.parse_recur(lhs, 0)
@@ -134,8 +164,15 @@ impl Parser {
   fn parse_primary(&mut self) -> Result<ExprKind, String> {
     match self.advance() {
       Token::Num(n) => Ok(ExprKind::NumLiteral(n) ),
-      Token::Str(_) => Ok(ExprKind::StrLiteral ),
-      Token::Identifier(name) => Ok(ExprKind::Identifier(name) ),
+      Token::Str(str) => Ok(ExprKind::StrLiteral(str)),
+      Token::Identifier(name) => {
+        if *self.peek() == Token::Punctuator(PunctKind::OpenParen) {
+          self.parse_func_call(name)
+        }
+        else {
+          Ok(ExprKind::Variable(name))
+        }
+      },
       Token::Punctuator(PunctKind::OpenParen) => {
         let expr = self.parse_expr()?;
         self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
@@ -171,7 +208,7 @@ impl Parser {
         rhs = self.parse_recur(rhs, precedence)?;
       }
 
-      lhs = ExprKind::BinOperator {
+      lhs = ExprKind::BinOperation {
         lhs: Box::new(lhs),
         op,
         rhs: Box::new(rhs),

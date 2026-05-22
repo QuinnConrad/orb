@@ -24,18 +24,26 @@ pub enum Stmt {
 
 #[derive(Debug)]
 pub enum TypeKind {
+  Arcanum,
+  Glyph,
+  Halfling,
   Void,
+  Custom(String),
   TODO,
 }
 
 #[derive(Debug)]
 pub enum ExprKind {
   NumLiteral(NumKind),
-  StrLiteral,
-  BinOperator {
+  StrLiteral(String),
+  BinOperation {
     lhs: Box<ExprKind>,
     op: OperatorKind,
     rhs: Box<ExprKind>
   },
-  Identifier(String),
+  Variable(String),
+  FunctionCall {
+    name: String,
+    args: Vec<ExprKind>,
+  }
 }

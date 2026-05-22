@@ -1,13 +1,5 @@
-123 -123 123.123
+spell fireball(shmungus level) => void {
+  # gathering mana
+}
 
-hello
-
-"hello"
-
-perhaps
-
-otherwise
-
-# Testing identifier w/ keyword as prefix:
-
-perhaps_otherwise
+# end
