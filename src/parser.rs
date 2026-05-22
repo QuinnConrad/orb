@@ -9,6 +9,7 @@ pub struct Parser {
 }
 
 impl Parser {
+  #[must_use] 
   pub fn new(tokens: Vec<Token>) -> Self {
     Self {tokens, idx: 0}
   }
@@ -132,9 +133,9 @@ impl Parser {
 
   fn parse_primary(&mut self) -> Result<ExprKind, String> {
     match self.advance() {
-      Token::Num(n) => Ok((ExprKind::NumLiteral(n))),
-      Token::Str(_) => Ok((ExprKind::StrLiteral)),
-      Token::Identifier(name) => Ok((ExprKind::Identifier(name))),
+      Token::Num(n) => Ok(ExprKind::NumLiteral(n) ),
+      Token::Str(_) => Ok(ExprKind::StrLiteral ),
+      Token::Identifier(name) => Ok(ExprKind::Identifier(name) ),
       Token::Punctuator(PunctKind::OpenParen) => {
         let expr = self.parse_expr()?;
         self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
@@ -156,7 +157,7 @@ impl Parser {
       let op_token = self.advance();
       let op = match op_token {
         Token::Operator(kind) => kind,
-        _ => return Err(format!("Expected operator, found {:?}", op_token)),
+        _ => return Err(format!("Expected operator, found {op_token:?}")),
       };
 
       let mut rhs = self.parse_primary()?;
@@ -170,11 +171,11 @@ impl Parser {
         rhs = self.parse_recur(rhs, precedence)?;
       }
 
-      lhs = (ExprKind::BinOperator {
+      lhs = ExprKind::BinOperator {
         lhs: Box::new(lhs),
         op,
         rhs: Box::new(rhs),
-    });
+    } ;
   }
   Ok(lhs)
 } // parse_recur
