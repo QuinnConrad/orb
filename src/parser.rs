@@ -9,6 +9,7 @@ pub struct Parser {
 }
 
 impl Parser {
+  #[must_use]
   pub fn new(tokens: Vec<Token>) -> Self {
     Self {tokens, idx: 0}
   }
@@ -33,7 +34,7 @@ impl Parser {
   } // advance
 
   fn consume(&mut self, expected: &Token) -> Result<Token, String> {
-    if *self.peek() == *expected {
+    if self.peek() == expected {
       Ok(self.advance())
     }
     else {
@@ -78,7 +79,11 @@ impl Parser {
   fn parse_type(&mut self) -> Result<TypeKind, String> {
     let token = self.advance();
     match token {
+      Token::Keyword(KeywordKind::Arcanum) => Ok(TypeKind::Arcanum),
+      Token::Keyword(KeywordKind::Glyph) => Ok(TypeKind::Glyph),
+      Token::Keyword(KeywordKind::Halfling) => Ok(TypeKind::Halfling),
       Token::Keyword(KeywordKind::Void) => Ok(TypeKind::Void),
+      Token::Identifier(ident) => Ok(TypeKind::Custom(ident)),
       Token::Keyword(_) => Ok(TypeKind::TODO),
       _ => Err(format!("Expected type keyword, got {token:?}")),
     }
@@ -125,16 +130,49 @@ impl Parser {
     })
   } // parse_spell_decl
 
-  fn parse_expr(&mut self) -> Result<Stmt, String> {
+  fn parse_expr_stmt(&mut self) -> Result<Stmt, String> {
+    let expr = self.parse_expr()?;
+
+    if *self.peek() == Token::Punctuator(PunctKind::Semicolon) {
+        self.advance();
+    }
+
+    Ok(Stmt::Expr(expr))
+  } // parse_expr_stmt
+
+  fn parse_func_call(&mut self, name: String) -> Result<ExprKind, String> {
+    self.consume(&Token::Punctuator(PunctKind::OpenParen))?;
+
+    let mut args = Vec::new();
+    while *self.peek() != Token::Punctuator(PunctKind::CloseParen) {
+        args.push(self.parse_expr()?);
+        if *self.peek() != Token::Punctuator(PunctKind::CloseParen) {
+            self.consume(&Token::Punctuator(PunctKind::Comma))?;
+        }
+    }
+    self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
+
+    Ok(ExprKind::FunctionCall { name, args })
+  } // parse_func_call
+
+
+  fn parse_expr(&mut self) -> Result<ExprKind, String> {
     let lhs = self.parse_primary()?;
     self.parse_recur(lhs, 0)
   } // parse_expr
 
-  fn parse_primary(&mut self) -> Result<Stmt, String> {
+  fn parse_primary(&mut self) -> Result<ExprKind, String> {
     match self.advance() {
-      Token::Num(n) => Ok(Stmt::Expr(ExprKind::NumLiteral(n))),
-      Token::Str(_) => Ok(Stmt::Expr(ExprKind::StrLiteral)),
-      Token::Identifier(name) => Ok(Stmt::Expr(ExprKind::Identifier(name))),
+      Token::Num(n) => Ok(ExprKind::NumLiteral(n) ),
+      Token::Str(str) => Ok(ExprKind::StrLiteral(str)),
+      Token::Identifier(name) => {
+        if *self.peek() == Token::Punctuator(PunctKind::OpenParen) {
+          self.parse_func_call(name)
+        }
+        else {
+          Ok(ExprKind::Variable(name))
+        }
+      },
       Token::Punctuator(PunctKind::OpenParen) => {
         let expr = self.parse_expr()?;
         self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
@@ -144,11 +182,40 @@ impl Parser {
     }
   } // parse_primary
 
-  fn parse_recur(&mut self, lhs: Stmt, min_precedence: i32) -> Result<Stmt, String> {
-    let lookahead = self.peek();
-    //whi
-    todo!()
-  } // parse_recur
+  fn parse_recur(&mut self, mut lhs: ExprKind, min_precedence: i32) -> Result<ExprKind, String> {
+    loop {
+      let lookahead = self.peek().clone();
+      let precedence = Self::get_precedence(&lookahead);
+
+      if precedence < min_precedence {
+        break;
+      }
+
+      let op_token = self.advance();
+      let op = match op_token {
+        Token::Operator(kind) => kind,
+        _ => return Err(format!("Expected operator, found {op_token:?}")),
+      };
+
+      let mut rhs = self.parse_primary()?;
+
+      let next_lookahead = self.peek();
+      let next_precedence = Self::get_precedence(next_lookahead);
+
+      if next_precedence > precedence {
+        rhs = self.parse_recur(rhs, precedence + 1)?;
+      } else if self.is_right_associative(&op_token) && next_precedence == precedence {
+        rhs = self.parse_recur(rhs, precedence)?;
+      }
+
+      lhs = ExprKind::BinOperation {
+        lhs: Box::new(lhs),
+        op,
+        rhs: Box::new(rhs),
+    } ;
+  }
+  Ok(lhs)
+} // parse_recur
 
   fn get_precedence(token: &Token) -> i32 {
     match token {
@@ -174,5 +241,22 @@ impl Parser {
       _ => -1,
     }
   } // get_precedence
+
+
+  fn is_right_associative(&self, token: &Token) -> bool {
+    match token {
+      Token::Operator(op) => matches!(
+        op,
+        OperatorKind::Assign |
+        OperatorKind::PlusAssign |
+        OperatorKind::MinusAssign |
+        OperatorKind::MultAssign |
+        OperatorKind::DivAssign |
+        OperatorKind::ModAssign
+      ),
+      _ => false,
+    }
+  } // is_right_associtative
+
 
 } // impl Parser
