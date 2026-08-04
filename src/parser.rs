@@ -71,6 +71,9 @@ impl Parser {
     match *self.peek() {
       Token::Keyword(KeywordKind::Spell) => self.parse_spell_decl(),
       Token::Comment(mana) => {self.advance(); Ok(Stmt::Comment(mana))},
+      Token::Keyword(KeywordKind::Arcanum |
+                     KeywordKind::Glyph |
+                     KeywordKind::Halfling) => self.parse_let(),
       _ => todo!("{:?}", *self.peek()),
     }
   } // parse_statement
@@ -85,7 +88,7 @@ impl Parser {
       Token::Keyword(KeywordKind::Void) => Ok(TypeKind::Void),
       Token::Identifier(ident) => Ok(TypeKind::Custom(ident)),
       Token::Keyword(_) => Ok(TypeKind::TODO),
-      _ => Err(format!("Expected type keyword, got {token:?}")),
+      _ => Err(format!("Expected type keyword or ident, got {token:?}")),
     }
   } // parse_type
 
@@ -258,5 +261,28 @@ impl Parser {
     }
   } // is_right_associtative
 
+  fn parse_let(&mut self) -> Result<Stmt, String> {
+    let var_type = self.parse_type()?;
+
+    let name = match self.advance() {
+        Token::Identifier(ident) => ident,
+        tok => return Err(format!("Expected variable name, got {tok:?}")),
+    };
+
+    let val = if *self.peek() == Token::Operator(OperatorKind::Assign) {
+        self.advance();
+        Some(self.parse_expr()?)
+    } else {
+        None
+    };
+
+    self.consume(&Token::Punctuator(PunctKind::Semicolon));
+
+    Ok(Stmt::Let {
+      var_type,
+      name,
+      val,
+    })
+  } // parse_let
 
 } // impl Parser

@@ -1,5 +1,7 @@
 spell fireball(shmungus level) => void {
   # gathering mana
+  arcanum a;
+  arcanum b <= 4;
 }
 
 # end
