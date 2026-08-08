@@ -13,7 +13,7 @@ fn main() {
         println!("Error: no file passed");
         return;
     }
-    println!("{}", &args[1]);
+    println!("{}", args[1]);
     let file_path = &args[1];
     let input = fs::read_to_string(file_path)
         .expect("Should have been able to read the file");
