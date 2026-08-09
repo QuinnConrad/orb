@@ -1,7 +1,19 @@
+spell call_foo() => halfling {
+  evoke 2.0;
+}
+
+spell call_bar() => void {
+  evoke;
+}
+
 spell fireball(shmungus level) => void {
   # gathering mana
   arcanum a;
   arcanum b <= 4;
+  halfling c <= b + call_foo(); #cast spell and capture.
+  call_bar(); #cast spell and do not capture.
 }
+
+
 
 # end

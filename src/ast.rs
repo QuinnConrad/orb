@@ -19,6 +19,7 @@ pub enum Stmt {
     name: String,
     var_type: TypeKind,
   },
+  Return(Option<ExprKind>),
 
 }
 

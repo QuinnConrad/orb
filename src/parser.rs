@@ -74,6 +74,8 @@ impl Parser {
       Token::Keyword(KeywordKind::Arcanum |
                      KeywordKind::Glyph |
                      KeywordKind::Halfling) => self.parse_let(),
+      Token::Keyword(KeywordKind::Evoke) => self.parse_return(),
+      Token::Identifier(_) => self.parse_identifier(),
       _ => todo!("{:?}", *self.peek()),
     }
   } // parse_statement
@@ -284,5 +286,19 @@ impl Parser {
       val,
     })
   } // parse_let
+
+  fn parse_return(&mut self) -> Result<Stmt, String> {
+    self.consume(&Token::Keyword(KeywordKind::Evoke))?;
+    let mut value = None;
+    if self.peek() != &Token::Punctuator(PunctKind::Semicolon) {
+      value = Some(self.parse_expr()?);
+    }
+    self.consume(&Token::Punctuator(PunctKind::Semicolon));
+    Ok(Stmt::Return(value))
+  } // parse_return
+
+  fn parse_identifier(&mut self) -> Result<Stmt, String> {
+    todo!("impl");
+  } // parse_identifier
 
 } // impl Parser
