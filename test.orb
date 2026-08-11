@@ -9,8 +9,8 @@ spell call_bar() => void {
 spell fireball(shmungus level) => void {
   # gathering mana
   arcanum a;
-  arcanum b <= 4;
-  halfling c <= b + call_foo(); #cast spell and capture.
+  halfling b <= 4.0;
+  mytype c <= b + call_foo(); #cast spell and capture.
   call_bar(); #cast spell and do not capture.
 }
 

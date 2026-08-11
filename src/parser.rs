@@ -26,6 +26,15 @@ impl Parser {
     self.tokens[self.idx - 1].clone()
   } // prev
 
+  fn peek_next(&self) -> Token {
+    if !self.empty() {
+      self.tokens[self.idx + 1].clone()
+    }
+    else {
+      Token::Eof
+    }
+  } // peeek_next
+
   fn advance(&mut self) -> Token {
     if !self.empty() {
       self.idx += 1;
@@ -298,7 +307,21 @@ impl Parser {
   } // parse_return
 
   fn parse_identifier(&mut self) -> Result<Stmt, String> {
-    todo!("impl");
+    let tok = self.peek();
+    let tok = match tok {
+      Token::Identifier(s) => s,
+      _ => return Err(format!("Expected identifier; got {tok:?}"))
+    };
+    let next = self.peek_next();
+    match next {
+      Token::Identifier(_) => self.parse_let(),
+      Token::Punctuator(PunctKind::OpenParen) => {
+        let res = Ok(Stmt::Expr(self.parse_expr()?));
+        self.consume(&Token::Punctuator(PunctKind::Semicolon));
+        res
+      },
+      _ => Err(format!("Unexpected token: {next:?}")),
+    }
   } // parse_identifier
 
 } // impl Parser
