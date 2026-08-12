@@ -5,13 +5,6 @@ pub struct Lexer {
   rules: Regex,
 }
 
-#[derive(Debug)]
-pub enum LexerErr {
-  UnexpectedCharErr(usize),
-  UnmatchedErr,
-  ParsingErr,
-}
-
 impl Default for Lexer {
     fn default() -> Self {
         Self::new()
@@ -39,13 +32,13 @@ impl Lexer {
   /// let input = "spell smite(pure arcanum level) => halfling;";
   /// assert!(lex.tokenize(input).is_ok())
   /// ```
-  pub fn tokenize(&self, input: &str) -> Result<Vec<Token>, LexerErr> {
+  pub fn tokenize(&self, input: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut idx = 0;
     while idx < input.len() {
       if let Some(matched) = self.rules.find_at(input, idx) {
         if matched.start() != idx {
-          return Err(LexerErr::UnexpectedCharErr(idx));
+          return Err(format!("Unexpected error at {idx}"));
         }
         let caps = self.rules.captures(&input[idx..]).unwrap();
         if caps.name("WORD").is_some() {
@@ -57,10 +50,10 @@ impl Lexer {
         else if caps.name("NUM").is_some() {
           let num_str = matched.as_str();
           let kind = if num_str.contains('.') {
-            let val = num_str.parse::<f64>().map_err(|_| LexerErr::ParsingErr)?;
+            let val = num_str.parse::<f64>().map_err(|_| format!("Error parsing number."))?;
             NumKind::Float(val)
           } else {
-            let val = num_str.parse::<i64>().map_err(|_| LexerErr::ParsingErr)?;
+            let val = num_str.parse::<i64>().map_err(|_| format!("Error parsing number"))?;
             NumKind::Int(val)
           };
           tokens.push(Token::Num(kind));
