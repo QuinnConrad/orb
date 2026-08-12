@@ -27,13 +27,12 @@ impl Parser {
   } // prev
 
   fn peek_next(&self) -> Token {
-    if !self.empty() {
+    if self.empty() {
+      Token::Eof
+    } else {
       self.tokens[self.idx + 1].clone()
     }
-    else {
-      Token::Eof
-    }
-  } // peeek_next
+  } // peek_next
 
   fn advance(&mut self) -> Token {
     if !self.empty() {
@@ -84,6 +83,7 @@ impl Parser {
                      KeywordKind::Glyph |
                      KeywordKind::Halfling) => self.parse_let(),
       Token::Keyword(KeywordKind::Evoke) => self.parse_return(),
+      Token::Keyword(KeywordKind::Perhaps) => self.parse_conditional(),
       Token::Identifier(_) => self.parse_identifier(),
       _ => todo!("{:?}", *self.peek()),
     }
@@ -287,7 +287,7 @@ impl Parser {
         None
     };
 
-    self.consume(&Token::Punctuator(PunctKind::Semicolon));
+    let _ = self.consume(&Token::Punctuator(PunctKind::Semicolon));
 
     Ok(Stmt::Let {
       var_type,
@@ -302,13 +302,13 @@ impl Parser {
     if self.peek() != &Token::Punctuator(PunctKind::Semicolon) {
       value = Some(self.parse_expr()?);
     }
-    self.consume(&Token::Punctuator(PunctKind::Semicolon));
+    let _ = self.consume(&Token::Punctuator(PunctKind::Semicolon));
     Ok(Stmt::Return(value))
   } // parse_return
 
   fn parse_identifier(&mut self) -> Result<Stmt, String> {
     let tok = self.peek();
-    let tok = match tok {
+    let _tok = match tok {
       Token::Identifier(s) => s,
       _ => return Err(format!("Expected identifier; got {tok:?}"))
     };
@@ -317,11 +317,41 @@ impl Parser {
       Token::Identifier(_) => self.parse_let(),
       Token::Punctuator(PunctKind::OpenParen) => {
         let res = Ok(Stmt::Expr(self.parse_expr()?));
-        self.consume(&Token::Punctuator(PunctKind::Semicolon));
+        let _ = self.consume(&Token::Punctuator(PunctKind::Semicolon));
         res
       },
       _ => Err(format!("Unexpected token: {next:?}")),
     }
   } // parse_identifier
+
+  fn parse_conditional(&mut self) -> Result<Stmt, String> {
+    let _ = self.consume(&Token::Keyword(KeywordKind::Perhaps))?;
+    let _ = self.consume(&Token::Punctuator(PunctKind::OpenParen))?;
+    let condition = self.parse_expr()?;
+    let _ = self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
+
+    let _ = self.consume(&Token::Punctuator(PunctKind::OpenBrace))?;
+    let mut consequent = Vec::new();
+    while self.peek() != &Token::Punctuator(PunctKind::CloseBrace) {
+      consequent.push(self.parse_statement()?);
+    }
+    let _ = self.consume(&Token::Punctuator(PunctKind::CloseBrace))?;
+
+    let mut alternative = Vec::new();
+    if self.peek() == &Token::Keyword(KeywordKind::Otherwise) {
+      let _ = self.consume(&Token::Keyword(KeywordKind::Otherwise))?;
+      let _ = self.consume(&Token::Punctuator(PunctKind::OpenBrace))?;
+      while self.peek() != &Token::Punctuator(PunctKind::CloseBrace) {
+        alternative.push(self.parse_statement()?);
+      }
+      let _ = self.consume(&Token::Punctuator(PunctKind::CloseBrace))?;
+    }
+
+    Ok(Stmt::Conditional {
+      condition,
+      consequent,
+      alternative
+    })
+  } // parse_conditional
 
 } // impl Parser

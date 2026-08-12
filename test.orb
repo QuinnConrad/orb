@@ -1,9 +1,10 @@
-spell call_foo() => halfling {
-  evoke 2.0;
-}
-
 spell call_bar() => void {
   evoke;
+}
+
+spell call_foo() => halfling {
+  call_bar(); #cast spell w/o capture
+  evoke 2.0;
 }
 
 spell fireball(shmungus level) => void {
@@ -11,7 +12,13 @@ spell fireball(shmungus level) => void {
   arcanum a;
   halfling b <= 4.0;
   mytype c <= b + call_foo(); #cast spell and capture.
-  call_bar(); #cast spell and do not capture.
+
+  perhaps (c > 2.0) {
+    call_bar();
+  }
+  otherwise {
+    call_foo();
+  }
 }
 
 

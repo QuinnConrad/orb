@@ -20,6 +20,11 @@ pub enum Stmt {
     var_type: TypeKind,
   },
   Return(Option<ExprKind>),
+  Conditional {
+    condition: ExprKind,
+    consequent: Vec<Stmt>,
+    alternative: Vec<Stmt>
+  }
 
 }
 
