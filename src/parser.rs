@@ -84,6 +84,7 @@ impl Parser {
                      KeywordKind::Halfling) => self.parse_let(),
       Token::Keyword(KeywordKind::Evoke) => self.parse_return(),
       Token::Keyword(KeywordKind::Perhaps) => self.parse_conditional(),
+      Token::Keyword(KeywordKind::Whilst) => self.parse_while(),
       Token::Identifier(_) => self.parse_identifier(),
       _ => todo!("{:?}", *self.peek()),
     }
@@ -199,26 +200,25 @@ impl Parser {
   fn parse_recur(&mut self, mut lhs: ExprKind, min_precedence: i32) -> Result<ExprKind, String> {
     loop {
       let lookahead = self.peek().clone();
-      let precedence = Self::get_precedence(&lookahead);
+      let precedence = get_precedence(&lookahead);
 
       if precedence < min_precedence {
         break;
       }
 
       let op_token = self.advance();
-      let op = match op_token {
-        Token::Operator(kind) => kind,
-        _ => return Err(format!("Expected operator, found {op_token:?}")),
+      let Token::Operator(op) = op_token else {
+        return Err(format!("Expected operator, found {op_token:?}"))
       };
 
       let mut rhs = self.parse_primary()?;
 
       let next_lookahead = self.peek();
-      let next_precedence = Self::get_precedence(next_lookahead);
+      let next_precedence = get_precedence(next_lookahead);
 
       if next_precedence > precedence {
         rhs = self.parse_recur(rhs, precedence + 1)?;
-      } else if self.is_right_associative(&op_token) && next_precedence == precedence {
+      } else if is_right_associative(&op_token) && next_precedence == precedence {
         rhs = self.parse_recur(rhs, precedence)?;
       }
 
@@ -226,51 +226,13 @@ impl Parser {
         lhs: Box::new(lhs),
         op,
         rhs: Box::new(rhs),
-    } ;
-  }
-  Ok(lhs)
-} // parse_recur
-
-  fn get_precedence(token: &Token) -> i32 {
-    match token {
-      Token::Operator(op) => match op {
-        OperatorKind::Assign | OperatorKind::PlusAssign | OperatorKind::MinusAssign |
-        OperatorKind::MultAssign | OperatorKind::DivAssign | OperatorKind::ModAssign => 1,
-
-        OperatorKind::LogOr => 2,
-        OperatorKind::LogAnd => 3,
-
-        OperatorKind::Eq | OperatorKind::Ne |
-          OperatorKind::Lt | OperatorKind::Gt |
-          OperatorKind::Le | OperatorKind::Ge => 4,
-        OperatorKind::BitOr => 5,
-        OperatorKind::BitXor => 6,
-        OperatorKind::BitAnd => 7,
-        OperatorKind::BitLeft | OperatorKind::BitRight => 8,
-        OperatorKind::Plus | OperatorKind::Minus => 9,
-        OperatorKind::Mult | OperatorKind::Div | OperatorKind::Mod => 10,
-
-        _ => -1,
-      },
-      _ => -1,
+      };
     }
-  } // get_precedence
+    Ok(lhs)
+  } // parse_recur
 
 
-  fn is_right_associative(&self, token: &Token) -> bool {
-    match token {
-      Token::Operator(op) => matches!(
-        op,
-        OperatorKind::Assign |
-        OperatorKind::PlusAssign |
-        OperatorKind::MinusAssign |
-        OperatorKind::MultAssign |
-        OperatorKind::DivAssign |
-        OperatorKind::ModAssign
-      ),
-      _ => false,
-    }
-  } // is_right_associtative
+
 
   fn parse_let(&mut self) -> Result<Stmt, String> {
     let var_type = self.parse_type()?;
@@ -308,9 +270,8 @@ impl Parser {
 
   fn parse_identifier(&mut self) -> Result<Stmt, String> {
     let tok = self.peek();
-    let _tok = match tok {
-      Token::Identifier(s) => s,
-      _ => return Err(format!("Expected identifier; got {tok:?}"))
+    let Token::Identifier(_tok) = tok else {
+      return Err(format!("Expected identifier; got {tok:?}"))
     };
     let next = self.peek_next();
     match next {
@@ -320,6 +281,20 @@ impl Parser {
         let _ = self.consume(&Token::Punctuator(PunctKind::Semicolon));
         res
       },
+      Token::Operator(_) => {
+        let Token::Identifier(name) = self.advance() else { unreachable!() };
+        let op = self.advance();
+        let val = self.parse_expr()?;
+        let _ = self.consume(&Token::Punctuator(PunctKind::Semicolon))?;
+        if is_right_associative(&op) {
+          let Token::Operator(op) = op else { unreachable!() };
+          Ok(Stmt::Assignment {name, op, val})
+        }
+        else {
+          Err(format!("Expected assignment but found {op:?}"))
+        }
+      }
+      //TODO: assignment
       _ => Err(format!("Unexpected token: {next:?}")),
     }
   } // parse_identifier
@@ -354,4 +329,60 @@ impl Parser {
     })
   } // parse_conditional
 
+  fn parse_while(&mut self) -> Result<Stmt, String> {
+    let _ = self.consume(&Token::Keyword(KeywordKind::Whilst))?;
+    let _ = self.consume(&Token::Punctuator(PunctKind::OpenParen))?;
+    let condition = self.parse_expr()?;
+    let _ = self.consume(&Token::Punctuator(PunctKind::CloseParen))?;
+
+    let _ = self.consume(&Token::Punctuator(PunctKind::OpenBrace))?;
+    let mut body = Vec::new();
+    while self.peek() != &Token::Punctuator(PunctKind::CloseBrace) {
+      body.push(self.parse_statement()?);
+    }
+    let _ = self.consume(&Token::Punctuator(PunctKind::CloseBrace))?;
+
+    Ok(Stmt::While {condition, body})
+  } // parse_while
+
 } // impl Parser
+
+
+fn get_precedence(token: &Token) -> i32 {
+  match token {
+    Token::Operator(op) => match op {
+      OperatorKind::Assign | OperatorKind::PlusAssign | OperatorKind::MinusAssign |
+      OperatorKind::MultAssign | OperatorKind::DivAssign | OperatorKind::ModAssign => 1,
+
+      OperatorKind::LogOr => 2,
+      OperatorKind::LogAnd => 3,
+
+      OperatorKind::Eq | OperatorKind::Ne |
+        OperatorKind::Lt | OperatorKind::Gt |
+        OperatorKind::Le | OperatorKind::Ge => 4,
+      OperatorKind::BitOr => 5,
+      OperatorKind::BitXor => 6,
+      OperatorKind::BitAnd => 7,
+      OperatorKind::BitLeft | OperatorKind::BitRight => 8,
+      OperatorKind::Plus | OperatorKind::Minus => 9,
+      OperatorKind::Mult | OperatorKind::Div | OperatorKind::Mod => 10,
+      _ => -1,
+    },
+    _ => -1,
+  }
+} // get_precedence
+
+fn is_right_associative(token: &Token) -> bool {
+  match token {
+  Token::Operator(op) => matches!(
+    op,
+    OperatorKind::Assign |
+    OperatorKind::PlusAssign |
+    OperatorKind::MinusAssign |
+    OperatorKind::MultAssign |
+    OperatorKind::DivAssign |
+    OperatorKind::ModAssign
+    ),
+    _ => false,
+  }
+} // is_right_associtative

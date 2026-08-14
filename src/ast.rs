@@ -7,6 +7,11 @@ pub enum Stmt {
     name: String,
     val: Option<ExprKind>,
   },
+  Assignment {
+    name: String,
+    op: OperatorKind,
+    val: ExprKind
+  },
   Expr(ExprKind),
   SpellDecl {
     name: String,
@@ -24,8 +29,11 @@ pub enum Stmt {
     condition: ExprKind,
     consequent: Vec<Stmt>,
     alternative: Vec<Stmt>
-  }
-
+  },
+  While {
+    condition: ExprKind,
+    body: Vec<Stmt>
+  },
 }
 
 #[derive(Debug)]

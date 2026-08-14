@@ -50,10 +50,10 @@ impl Lexer {
         else if caps.name("NUM").is_some() {
           let num_str = matched.as_str();
           let kind = if num_str.contains('.') {
-            let val = num_str.parse::<f64>().map_err(|_| format!("Error parsing number."))?;
+            let val = num_str.parse::<f64>().map_err(|_| "Error parsing number.".to_string())?;
             NumKind::Float(val)
           } else {
-            let val = num_str.parse::<i64>().map_err(|_| format!("Error parsing number"))?;
+            let val = num_str.parse::<i64>().map_err(|_| "Error parsing number".to_string())?;
             NumKind::Int(val)
           };
           tokens.push(Token::Num(kind));

@@ -13,11 +13,18 @@ spell fireball(shmungus level) => void {
   halfling b <= 4.0;
   mytype c <= b + call_foo(); #cast spell and capture.
 
+  # conditionals
   perhaps (c > 2.0) {
     call_bar();
   }
   otherwise {
     call_foo();
+  }
+
+  # looping
+  arcanum i <= 0;
+  whilst (i < 10) {
+    i <+ 1;
   }
 }
 
